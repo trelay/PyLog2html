@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-HTML logger inspired by the Horde3D logger.
+Python log file to html and do rotation method,but without limited count.
 Usage:
  - call setup and specify the filename, title, version and level
  - call dbg, info, warn or err to log messages.
