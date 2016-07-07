@@ -282,6 +282,7 @@ class CONFormatter(logging.Formatter):
         super().__init__(fmt)
 
     def format(self, record):
+<<<<<<< HEAD
 
         console_normal='\x1b[0m'
         if record.levelname=='ERROR':
@@ -293,6 +294,19 @@ class CONFormatter(logging.Formatter):
         else:
             console_color=console_normal
 
+=======
+
+        console_normal='\x1b[0m'
+        if record.levelname=='ERROR':
+            console_color='\x1b[31m'
+        elif record.levelname=='CRITICAL':
+            console_color='\x1b[31m'
+        elif record.levelname=='WARNING':
+            console_color='\x1b[33m'
+        else:
+            console_color=console_normal
+
+>>>>>>> 5aa6e2346298debdfac77fa853fb581597ff1848
         record.message = record.getMessage()
         record.message=record.message.replace(HighLight_msg_tag_start,\
                        console_color)
