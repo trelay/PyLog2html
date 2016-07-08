@@ -135,19 +135,6 @@ This following table were created by addtional thread-->
 <table>
 """
 
-#FIXME:, need to move this to config file.
-Key_Italic=True
-Font_Size=5
-HighLight_msg_tag_start="<hl>"
-HighLight_msg_tag_end="</hl>"
-START_DOC_DICT=dict(
-title="Test_Title",
-err_color="#FF0000",
-warn_color="#FFFF00",
-info_color="#FFFFFF",
-dbg_color="#FFFFFF")
-log_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-
 
 class HTMLFileHandler(logging.handlers.RotatingFileHandler):
     """
@@ -158,6 +145,7 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
                  END_OF_DOC_FMT=None, encoding=None, delay=False, 
                  title="Default Title"):
         #Rewrite RotatingFileHandler.__init__()
+        #FIXME: We may need to rotating file with backupCount
         self.title=title
         self.start_of_doc_fmt=START_OF_DOC_FMT
         if maxBytes > 0:
@@ -168,15 +156,8 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
         # Write header
         with open(self.baseFilename, 'r') as infile:
             data = infile.read()
-            #infile.seek(0,2)
-            #print('end is:',infile.tell())
-            #insert_offset=infile.tell()-18
-            #print('will insert to:',insert_offset)
 
         if self.title in data:
-            #self.stream.seek(-18,2)
-            #self.stream.write(REM_DOC_FMT)
-            #self.stream.seek(0,2)
             self.stream.write(MID_OF_DOC_FMT)
         else:
             self.stream.write(self.start_of_doc_fmt)
@@ -245,8 +226,14 @@ class HTMLFormatter(logging.Formatter):
                    'CRITICAL': 'err',
                    'ERROR': 'err'}
 
-    def __init__(self, fmt=None):
+    def __init__(self, fmt=None, Keyword_Italic=True, Keyword_FontSize=5, 
+                HighLight_msg_tag_start='<hl>', HighLight_msg_tag_end='</hl>'):
         super().__init__(fmt)
+
+        self.Keyword_Italic=Keyword_Italic
+        self.Keyword_FontSize=Keyword_FontSize
+        self.HighLight_msg_tag_start=HighLight_msg_tag_start
+        self.HighLight_msg_tag_end=HighLight_msg_tag_end
 
     def format(self, record):
         try:
@@ -257,32 +244,30 @@ class HTMLFormatter(logging.Formatter):
         if self.usesTime():
             record.asctime = self.formatTime(record, self.datefmt)
         record.cssname=class_name
-        # handle '<' and '>' (typically when logging %r)
-        #msg = record.msg
-        #msg=record.getMessage()
-        if Key_Italic:
-            record.message=record.message.replace(HighLight_msg_tag_start, \
-                             "<font size={0:d}><i>".format(Font_Size))
-            record.message=record.message.replace(HighLight_msg_tag_end,\
+        if self.Keyword_Italic:
+            record.message=record.message.replace(self.HighLight_msg_tag_start, \
+                             "<font size={0:d}><i>".format(self.Keyword_FontSize))
+            record.message=record.message.replace(self.HighLight_msg_tag_end,\
                              "</i></font>")
         else:
-            record.message=record.message.replace(HighLight_msg_tag_start,\
-                             "<font size={0:d}>".format(Font_Size))
-            record.message=record.message.replace(HighLight_msg_tag_end,\
+            record.message=record.message.replace(self.HighLight_msg_tag_start,\
+                             "<font size={0:d}>".format(Keyword_FontSize))
+            record.message=record.message.replace(self.HighLight_msg_tag_end,\
                              "</font>")
-        #msg = msg.replace("<", "&#60")
-        #msg = msg.replace(">", "&#62")
         return MSG_FMT % record.__dict__
 
 class CONFormatter(logging.Formatter):
     """
     Formats each record to console
     """
-    def __init__(self, fmt=None):
+    def __init__(self, fmt=None,HighLight_msg_tag_start='<hl>', 
+                 HighLight_msg_tag_end='</hl>'):
         super().__init__(fmt)
+        self.HighLight_msg_tag_start=HighLight_msg_tag_start
+        self.HighLight_msg_tag_end=HighLight_msg_tag_end
 
     def format(self, record):
-
+		#FIXME: Sync with html color
         console_normal='\x1b[0m'
         if record.levelname=='ERROR':
             console_color='\x1b[31m'
@@ -294,9 +279,9 @@ class CONFormatter(logging.Formatter):
             console_color=console_normal
 
         record.message = record.getMessage()
-        record.message=record.message.replace(HighLight_msg_tag_start,\
+        record.message=record.message.replace(self.HighLight_msg_tag_start,\
                        console_color)
-        record.message=record.message.replace(HighLight_msg_tag_end,\
+        record.message=record.message.replace(self.HighLight_msg_tag_end,\
                        console_normal)
 
         if self.usesTime():
@@ -322,23 +307,35 @@ class PyLogger(logging.Logger):
     Log records to html using a custom HTML formatter and a specialised
     file stream handler.
     """
-    def __init__(self, name="html_logger", filename="log.html", mode='a',
-                 title="HTML Logger",level=logging.DEBUG, maxBytes=204800,
-                 html_format='%(asctime)',encoding=None, delay=False,
-                 console_log=False):
+    def __init__(self, name="html_logger", html_filename="log.html", mode='a',
+                 html_title="HTML Logger",level=logging.DEBUG,
+                 HtmlmaxBytes=1024*1024, encoding=None, delay=False,
+                 html_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                 msg_color={'err_color': '#FF0000', 'warn_color': '#FFFF00',\
+                 'info_color': '#FFFFFF', 'dbg_color':'#FFFFFF'}, 
+                 Keyword_Italic=True,Keyword_FontSize=5, HighLight_msg_tag_start="<hl>",
+                 HighLight_msg_tag_end="</hl>",console_log=False):
 
         super().__init__(name, level)
 
+        START_DOC_DICT={'title':''}
+        START_DOC_DICT.update(msg_color)
+        START_DOC_DICT.update({'title':html_title})
         start_of_doc_fmt=START_OF_DOC_FMT % START_DOC_DICT
 
-        format_html = HTMLFormatter(html_format)
-        fh = HTMLFileHandler(filename, mode=mode, maxBytes=maxBytes, \
+        format_html = HTMLFormatter(html_format,Keyword_Italic, Keyword_FontSize,\
+                      HighLight_msg_tag_start, HighLight_msg_tag_end)
+
+        fh = HTMLFileHandler(filename=html_filename, mode=mode, maxBytes=HtmlmaxBytes, \
              START_OF_DOC_FMT=start_of_doc_fmt, END_OF_DOC_FMT=END_OF_DOC_FMT,\
-             encoding=encoding, delay=delay, title=title)
+             encoding=encoding, delay=delay, title=html_title)
+        fh.setLevel(level)
         fh.setFormatter(format_html)
         self.addHandler(fh)
+
         if console_log:
-            format_con = CONFormatter(html_format)
+            format_con = CONFormatter(html_format, HighLight_msg_tag_start,\
+									 HighLight_msg_tag_end)
             ch = logging.StreamHandler()
             ch.setLevel(level)
             ch.setFormatter(format_con)
