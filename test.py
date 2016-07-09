@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 from htmllog import *
 try:
-	#raise ValueError('variable enable by purpose')
+	raise ValueError('variable enable by purpose')
 	from config import CONF
 	app_name=CONF.LOG.app_name
 	Keyword_Italic=CONF.LOG.Keyword_Italic
@@ -26,7 +26,7 @@ except:
 	info_color="#FFFFFF",
 	dbg_color="#FFFFFF")
 	log_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-	HtmlmaxBytes=50*1024*1024
+	HtmlmaxBytes=7*1024
 	console_log=True
 	html_title="Default Title"
 	html_filename="Redfish_log.html"
@@ -39,7 +39,7 @@ logger=PyLogger(name=app_name, html_filename=html_filename, mode='a',
 	HighLight_msg_tag_start=HighLight_msg_tag_start,
     HighLight_msg_tag_end=HighLight_msg_tag_end,console_log=console_log)
 
-for i in range(2):
+for i in range(30):
 	logger.debug('This is诊断 debug')
 	logger.info('This is info')
 	logger.warning("This is <hl>warning</hl>")

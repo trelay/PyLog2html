@@ -1,9 +1,15 @@
 #!/usr/bin/python3
+#**********************************************************************
+#			Python log to html module
+#			Author: Trelay(trelwan@celestica.com)
+#			2016.07.09
+#
+#**********************************************************************
 """
 Python logger rationing to file without limited count.
 Usage:
- - call setup and specify the filename, title and level
- - call dbg, info, warn or err to log messages.
+ -instance a object of PyLogger
+ - log it
 """
 import os
 import logging
@@ -73,7 +79,7 @@ margin : 0;
 </select> </p>
 
 <script>
-function myFunction() {
+function myFunction(){
 var all = document.getElementsByTagName("tr");
 var slct_v = document.getElementById("mySelect").value;
 
@@ -83,19 +89,15 @@ var css_name=all[i].getElementsByTagName("td")[3].getAttribute("class");
 	if (css_name=="debug" & slct_v=="DEBUG"){
 	all[i].style.display='';
 	}
-
 	else if (css_name=="info" & slct_v=="INFO"){
 	all[i].style.display='';
 	}
-
 	else if (css_name=="warn" & slct_v=="WARNING"){
 	all[i].style.display='';
 	}
-	
 	else if (css_name=="err" & slct_v=="ERROR"){
 	all[i].style.display='';
 	}
-	
 	else{
 		if (slct_v=="ALL"){
 			all[i].style.display='';
@@ -104,8 +106,7 @@ var css_name=all[i].getElementsByTagName("td")[3].getAttribute("class");
 			all[i].style.display='none';
 		};
 	};
-
-};
+  };
 }
 </script>
 
@@ -141,11 +142,34 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
     File handler specialised to write the start of doc as html and to close it
     properly.
     """
-    def __init__(self, filename, mode='a', maxBytes=0,START_OF_DOC_FMT=None,
-                 END_OF_DOC_FMT=None, encoding=None, delay=False, 
+    def __init__(self, filename, mode='a', maxBytes=0,backupCount=5,rotating=False,
+                 START_OF_DOC_FMT=None,END_OF_DOC_FMT=None, encoding=None, delay=False,
                  title="Default Title"):
+        """
+        Open the specified file and use it as the stream for logging.
+
+        By default, the file grows indefinitely. You can specify particular
+        values of maxBytes and backupCount to allow the file to rollover at
+        a predetermined size if rotating is set to True, otherwise ratating file
+        without backCount limited.
+
+        Rollover occurs whenever the current log file is nearly maxBytes in
+        length. If backupCount is >= 1, the system will successively create
+        new files with the same pathname as the base file, but with count and extensions
+        "_1.html", "_2.html" etc. appended to it. For example, with a backupCount of 5
+        and a base file name of "app.html", you would get "app.html",
+        "app_1.html", "app_2.html", ... through to "app_5.html". The file being
+        written to is always "app.log" - when it gets filled up, it is closed
+        and renamed to "app_1.html", and if files "app_1.html", "app_2.html" etc.
+        exist, then they are renamed to "app_2.html", "app_3.html" etc.
+        respectively.
+
+        If maxBytes is zero, rollover never occurs.
+        """
+
         #Rewrite RotatingFileHandler.__init__()
-        #FIXME: We may need to rotating file with backupCount
+        self.rotating=rotating
+        self.Backup_Count=backupCount
         self.title=title
         self.start_of_doc_fmt=START_OF_DOC_FMT
         if maxBytes > 0:
@@ -179,7 +203,6 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
             logging.FileHandler.emit(self, record)
         except Exception:
             self.handleError(record)
-
     def doRollover(self):
         """
         Rewrite emit for BaseRotatingHandler.doRollover(self)
@@ -188,20 +211,26 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
         if self.stream:
             self.stream.close()
             self.stream = None
-
         base_fn=os.path.splitext(self.baseFilename)
-        backupCount=1
-        while True:
-            if not os.path.exists(self.rotation_filename("%s_%d%s" % \
-                (base_fn[0],backupCount,base_fn[1]))):
-                break
-            backupCount+=1
+    
+        if self.rotating:
+            backupCount=self.Backup_Count
+        else:
+            backupCount=1
+            while True:
+                if not os.path.exists(self.rotation_filename("%s_%d%s" % \
+                    (base_fn[0],backupCount,base_fn[1]))):
+                    break
+                backupCount+=1
         if backupCount > 0:
             for i in range(backupCount - 1, 0, -1):
                 bfn_root, bfn_ext = os.path.splitext(self.baseFilename)
                 sfn = self.rotation_filename("%s_%d%s" % (bfn_root,i,bfn_ext))
                 dfn = self.rotation_filename("%s_%d%s" % (bfn_root,i+1,bfn_ext))
                 if os.path.exists(sfn):
+                    if self.rotating:
+                        if os.path.exists(dfn):
+                            os.remove(dfn)
                     os.rename(sfn, dfn)
             dfn = self.rotation_filename(base_fn[0] + "_1"+ base_fn[1])
             if os.path.exists(dfn):
@@ -326,7 +355,9 @@ class PyLogger(logging.Logger):
         format_html = HTMLFormatter(html_format,Keyword_Italic, Keyword_FontSize,\
                       HighLight_msg_tag_start, HighLight_msg_tag_end)
 
+        #FIXME: the argument should be move to another place.
         fh = HTMLFileHandler(filename=html_filename, mode=mode, maxBytes=HtmlmaxBytes, \
+             backupCount=5,rotating=True,
              START_OF_DOC_FMT=start_of_doc_fmt, END_OF_DOC_FMT=END_OF_DOC_FMT,\
              encoding=encoding, delay=delay, title=html_title)
         fh.setLevel(level)
