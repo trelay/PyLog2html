@@ -14,6 +14,8 @@ try:
 	console_log=CONF.LOG.console_log
 	html_title=CONF.LOG.title
 	html_filename=CONF.LOG.logfilename
+	Html_Rotating=CONF.LOG.Html_Rotating
+	Html_backupCount=CONF.LOG.Html_backupCount
 except:
 	app_name="Red_Fish"
 	Keyword_Italic=True
@@ -21,12 +23,12 @@ except:
 	HighLight_msg_tag_start="<hl>"
 	HighLight_msg_tag_end="</hl>"
 	msg_color=dict(
-	err_color="#FF0000",
-	warn_color="#FFFF00",
-	info_color="#FFFFFF",
-	dbg_color="#FFFFFF")
+	err_color="blue1",
+	warn_color="red",
+	info_color="white",
+	dbg_color="white")
 	log_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-	HtmlmaxBytes=7*1024
+	HtmlmaxBytes=12*1024
 	console_log=True
 	html_title="Default Title"
 	html_filename="Redfish_log.html"
@@ -37,7 +39,8 @@ logger=PyLogger(name=app_name, html_filename=html_filename, mode='a',
     html_format=log_format, msg_color=msg_color,
     Keyword_Italic=Keyword_Italic,Keyword_FontSize=Keyword_FontSize,
 	HighLight_msg_tag_start=HighLight_msg_tag_start,
-    HighLight_msg_tag_end=HighLight_msg_tag_end,console_log=console_log)
+    HighLight_msg_tag_end=HighLight_msg_tag_end,console_log=console_log, 
+	Html_Rotating=False,Html_backupCount=5)
 
 for i in range(30):
 	logger.debug('This is诊断 debug')

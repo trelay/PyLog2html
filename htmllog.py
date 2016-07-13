@@ -2,16 +2,22 @@
 #**********************************************************************
 #			Python log to html module
 #			Author: Trelay(trelwan@celestica.com)
-#			2016.07.09
+#			version: 1.0
+#			2016.07.13
 #
 #**********************************************************************
 """
-Python logger rationing to file without limited count.
+Python logg to html file.
+The benefit of writing log to html: We can highlight the keyword or
+the error, to make the log file more colorful and understandable.
+And it includes writing log to console.
 Usage:
  -instance a object of PyLogger
- - log it
+ -log as what you did when using python built-in logging.
 """
 import os
+import sys
+import traceback
 import logging
 import logging.handlers
 
@@ -136,13 +142,25 @@ This following table were created by addtional thread-->
 <table>
 """
 
+class CONSOLE_COLOR:
+    yellow ='\x1b[1;93m'
+    cyan ='\x1b[1;36m'
+    magenta='\x1b[1;35m'
+    blue='\x1b[1;34m'
+    orange ='\x1b[1;33m'
+    green='\x1b[1;32m'
+    red='\x1b[1;31m'
+    black='\x1b[1;30m'
+    white='\x1b[0m'
+    normal='\x1b[0m'
+
 
 class HTMLFileHandler(logging.handlers.RotatingFileHandler):
     """
     File handler specialised to write the start of doc as html and to close it
     properly.
     """
-    def __init__(self, filename, mode='a', maxBytes=0,backupCount=5,rotating=False,
+    def __init__(self, filename, mode='a', maxBytes=0,rotating=False,backupCount=5,
                  START_OF_DOC_FMT=None,END_OF_DOC_FMT=None, encoding=None, delay=False,
                  title="Default Title"):
         """
@@ -191,7 +209,7 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
         Rewrite emit for BaseRotatingHandler.emit(self,record)
         Emit a record.
 
-        Output the record to the file, catering for rollover as described
+        Output the record to the html file, catering for rollover as described
         in doRollover().
         """
         try:
@@ -205,7 +223,7 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
             self.handleError(record)
     def doRollover(self):
         """
-        Rewrite emit for BaseRotatingHandler.doRollover(self)
+        Rewrite doRollover for BaseRotatingHandler.doRollover(self)
         Do a rollover, as described in __init__().
         """
         if self.stream:
@@ -247,8 +265,46 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
 
 class HTMLFormatter(logging.Formatter):
     """
-    Formats each record in html
+        Formatter instances are used to convert a LogRecord to text.
+
+    Formatters need to know how a LogRecord is constructed. They are
+    responsible for converting a LogRecord to (usually) a string which can
+    be interpreted by either a human or an external system. The base Formatter
+    allows a formatting string to be specified. If none is supplied, the
+    default value of "%s(message)" is used.
+
+    The Formatter can be initialized with a format string which makes use of
+    knowledge of the LogRecord attributes - e.g. the default value mentioned
+    above makes use of the fact that the user's message and arguments are pre-
+    formatted into a LogRecord's message attribute. Currently, the useful
+    attributes in a LogRecord are described by:
+
+    %(name)s            Name of the logger (logging channel)
+    %(levelno)s         Numeric logging level for the message (DEBUG, INFO,
+                        WARNING, ERROR, CRITICAL)
+    %(levelname)s       Text logging level for the message ("DEBUG", "INFO",
+                        "WARNING", "ERROR", "CRITICAL")
+    %(pathname)s        Full pathname of the source file where the logging
+                        call was issued (if available)
+    %(filename)s        Filename portion of pathname
+    %(module)s          Module (name portion of filename)
+    %(lineno)d          Source line number where the logging call was issued
+                        (if available)
+    %(funcName)s        Function name
+    %(created)f         Time when the LogRecord was created (time.time()
+                        return value)
+    %(asctime)s         Textual time when the LogRecord was created
+    %(msecs)d           Millisecond portion of the creation time
+    %(relativeCreated)d Time in milliseconds when the LogRecord was created,
+                        relative to the time the logging module was loaded
+                        (typically at application startup time)
+    %(thread)d          Thread ID (if available)
+    %(threadName)s      Thread name (if available)
+    %(process)d         Process ID (if available)
+    %(message)s         The result of record.getMessage(), computed just as
+                        the record is emitted
     """
+
     CSS_CLASSES = {'WARNING': 'warn',
                    'INFO': 'info',
                    'DEBUG': 'debug',
@@ -258,6 +314,14 @@ class HTMLFormatter(logging.Formatter):
     def __init__(self, fmt=None, Keyword_Italic=True, Keyword_FontSize=5, 
                 HighLight_msg_tag_start='<hl>', HighLight_msg_tag_end='</hl>'):
         super().__init__(fmt)
+        """
+        Initialize the formatter with specified format strings.
+        HighLight_msg_tag_start & HighLight_msg_tag_end: used to highlight message.
+        Keyword_Italic: Make the part of the message italic if it's decorated by 
+                 HighLight_msg_tag_*
+        Keyword_FontSize: The font size of the message italic if it's decorated by 
+                 HighLight_msg_tag_*
+        """
 
         self.Keyword_Italic=Keyword_Italic
         self.Keyword_FontSize=Keyword_FontSize
@@ -287,26 +351,50 @@ class HTMLFormatter(logging.Formatter):
 
 class CONFormatter(logging.Formatter):
     """
-    Formats each record to console
+    Formats each record to console with color.
+    class CONSOLE_COLOR:(defined in this file), show how to decorate the message
+    that is taged by HighLight_msg_tag_*, add or edit if you like.
+    
+    AttributeError: this error is raised if the color you chose is not in the list
+                   of CONSOLE_COLOR.
     """
     def __init__(self, fmt=None,HighLight_msg_tag_start='<hl>', 
-                 HighLight_msg_tag_end='</hl>'):
+                 HighLight_msg_tag_end='</hl>', msg_color={'err_color': 'red', 
+                 'warn_color': 'yellow','info_color': 'white', 'dbg_color':'white'}):
         super().__init__(fmt)
+        self.msg_color=msg_color
         self.HighLight_msg_tag_start=HighLight_msg_tag_start
         self.HighLight_msg_tag_end=HighLight_msg_tag_end
 
     def format(self, record):
-		#FIXME: Sync with html color
-        console_normal='\x1b[0m'
-        if record.levelname=='ERROR':
-            console_color='\x1b[31m'
-        elif record.levelname=='CRITICAL':
-            console_color='\x1b[31m'
-        elif record.levelname=='WARNING':
-            console_color='\x1b[33m'
-        else:
-            console_color=console_normal
-
+        try:
+            console_normal=getattr(CONSOLE_COLOR, 'normal')
+            if record.levelname=='ERROR':
+                console_color=getattr(CONSOLE_COLOR,self.msg_color['err_color'])
+            elif record.levelname=='CRITICAL':
+                console_color=getattr(CONSOLE_COLOR,self.msg_color['err_color'])
+            elif record.levelname=='WARNING':
+                console_color=getattr(CONSOLE_COLOR,self.msg_color['warn_color'])
+            elif record.levelname=='DEBUG':
+                console_color=getattr(CONSOLE_COLOR,self.msg_color['dbg_color'])
+            elif record.levelname=='INFO':
+                console_color=getattr(CONSOLE_COLOR,self.msg_color['info_color'])
+            else:
+                console_color=console_normal
+        except AttributeError:
+            color_keys=list(CONSOLE_COLOR.__dict__.keys())
+            color_keys.remove('__doc__')
+            color_keys.remove('__weakref__')
+            color_keys.remove('__module__')
+            color_keys.remove('__dict__')
+            t, v, tb = sys.exc_info()
+            sys.stderr.write('\n--- Logging error ---\n')
+            traceback.print_exception(t, v, tb, None, sys.stderr)
+            sys.stderr.write('\n--- Logging error ---\n')
+            sys.stderr.write('Does not support color error, choose one from list:'+\
+                             '\n'+str(color_keys)+'\nEdit class CONSOLE to add more.\n')
+            sys.exit()
+            
         record.message = record.getMessage()
         record.message=record.message.replace(self.HighLight_msg_tag_start,\
                        console_color)
@@ -335,15 +423,63 @@ class PyLogger(logging.Logger):
     """
     Log records to html using a custom HTML formatter and a specialised
     file stream handler.
+    name: The html logging thread name.
+    html_filename: The file name that you want to write to
+    mode: Specifies the mode to open the file, if filename is specified
+          (if filemode is unspecified, it defaults to 'a').
+    html_title: The title of the html specified above.
+    level: Set the file and console logger level to the specified level.
+    HtmlmaxBytes: The size of this html file
+    encoding: it is used to determine how to do the output to the stream
+
+    html_format: 
+    %(name)s            Name of the logger (logging channel)
+    %(levelno)s         Numeric logging level for the message (DEBUG, INFO,
+                        WARNING, ERROR, CRITICAL)
+    %(levelname)s       Text logging level for the message ("DEBUG", "INFO",
+                        "WARNING", "ERROR", "CRITICAL")
+    %(pathname)s        Full pathname of the source file where the logging
+                        call was issued (if available)
+    %(filename)s        Filename portion of pathname
+    %(module)s          Module (name portion of filename)
+    %(lineno)d          Source line number where the logging call was issued
+                        (if available)
+    %(funcName)s        Function name
+    %(created)f         Time when the LogRecord was created (time.time()
+                        return value)
+    %(asctime)s         Textual time when the LogRecord was created
+    %(msecs)d           Millisecond portion of the creation time
+    %(relativeCreated)d Time in milliseconds when the LogRecord was created,
+                        relative to the time the logging module was loaded
+                        (typically at application startup time)
+    %(thread)d          Thread ID (if available)
+    %(threadName)s      Thread name (if available)
+    %(process)d         Process ID (if available)
+    %(message)s         The result of record.getMessage(), computed just as
+                        the record is emitted
+
+    msg_color: Dict with Key is the class that you wish to show and the value
+               is the color.
+    Keyword_Italic: Make the part of the message italic if it's decorated by
+                 HighLight_msg_tag_*
+    Keyword_FontSize: The font size of the message italic if it's decorated by
+                 HighLight_msg_tag_*
+    Html_Rotating: If we need to rotate the html file if the file is over the
+                   limit of HtmlmaxBytes.
+    Html_backupCount: How much the files we'll back if current file is over the
+                   limit of HtmlmaxBytes.
+    console_log: Print log to console if Ture.
+
     """
     def __init__(self, name="html_logger", html_filename="log.html", mode='a',
                  html_title="HTML Logger",level=logging.DEBUG,
                  HtmlmaxBytes=1024*1024, encoding=None, delay=False,
                  html_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                 msg_color={'err_color': '#FF0000', 'warn_color': '#FFFF00',\
-                 'info_color': '#FFFFFF', 'dbg_color':'#FFFFFF'}, 
+                 msg_color={'err_color': 'red', 'warn_color': 'red',
+                 'info_color': 'white', 'dbg_color':'white'}, 
                  Keyword_Italic=True,Keyword_FontSize=5, HighLight_msg_tag_start="<hl>",
-                 HighLight_msg_tag_end="</hl>",console_log=False):
+                 HighLight_msg_tag_end="</hl>",Html_Rotating=False,Html_backupCount=5,
+                 console_log=False):
 
         super().__init__(name, level)
 
@@ -355,9 +491,9 @@ class PyLogger(logging.Logger):
         format_html = HTMLFormatter(html_format,Keyword_Italic, Keyword_FontSize,\
                       HighLight_msg_tag_start, HighLight_msg_tag_end)
 
-        #FIXME: the argument should be move to another place.
-        fh = HTMLFileHandler(filename=html_filename, mode=mode, maxBytes=HtmlmaxBytes, \
-             backupCount=5,rotating=True,
+        #FIXME: the argument should be move to another place?
+        fh =HTMLFileHandler(filename=html_filename,mode=mode,maxBytes=HtmlmaxBytes,\
+             rotating=Html_Rotating,backupCount=Html_backupCount,
              START_OF_DOC_FMT=start_of_doc_fmt, END_OF_DOC_FMT=END_OF_DOC_FMT,\
              encoding=encoding, delay=delay, title=html_title)
         fh.setLevel(level)
@@ -366,7 +502,7 @@ class PyLogger(logging.Logger):
 
         if console_log:
             format_con = CONFormatter(html_format, HighLight_msg_tag_start,\
-									 HighLight_msg_tag_end)
+									 HighLight_msg_tag_end, msg_color)
             ch = logging.StreamHandler()
             ch.setLevel(level)
             ch.setFormatter(format_con)

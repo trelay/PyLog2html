@@ -140,10 +140,23 @@ log_cfg_opts = [
 	default=50*1024*1024,
 	help='The size of the html file, keep it small\
 		otherwise, it takes long time to open it in brower'),
+
 	cfg.BoolOpt(
 	name="console_log",
 	default=False,
-	help='Whether to print log to console')
+	help='Whether to print log to console'),
+
+	cfg.BoolOpt(
+	name="Html_Rotating",
+	default=True,
+	help='Whether to rotate the log file if it over the HtmlmaxBytes'),
+
+	cfg.IntOpt(
+	name='Html_backupCount',
+	default=5,
+	help='If the "Html_Rotating" is open, \
+		Count of html file will be used to backup'),
+
 ]
 ##########################################################3
 request_group = cfg.OptGroup(
