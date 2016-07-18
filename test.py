@@ -23,12 +23,12 @@ except:
 	HighLight_msg_tag_start="<hl>"
 	HighLight_msg_tag_end="</hl>"
 	msg_color=dict(
-	err_color="blue1",
-	warn_color="red",
+	err_color="red",
+	warn_color="orange",
 	info_color="white",
 	dbg_color="white")
 	log_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-	HtmlmaxBytes=12*1024
+	HtmlmaxBytes=1024*1024*50
 	console_log=True
 	html_title="Default Title"
 	html_filename="Redfish_log.html"
@@ -42,8 +42,8 @@ logger=PyLogger(name=app_name, html_filename=html_filename, mode='a',
     HighLight_msg_tag_end=HighLight_msg_tag_end,console_log=console_log, 
 	Html_Rotating=False,Html_backupCount=5)
 
-for i in range(30):
-	logger.debug('This is诊断 debug')
+for i in range(6):
+	logger.debug('This is debug')
 	logger.info('This is info')
 	logger.warning("This is <hl>warning</hl>")
 	logger.error('This is <hl>error</hl> xxx')

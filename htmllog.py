@@ -1,11 +1,5 @@
 #!/usr/bin/python3
-#**********************************************************************
-#			Python log to html module
-#			Author: Trelay(trelwan@celestica.com)
-#			version: 1.0
-#			2016.07.13
-#
-#**********************************************************************
+
 """
 Python logg to html file.
 The benefit of writing log to html: We can highlight the keyword or
@@ -20,6 +14,11 @@ import sys
 import traceback
 import logging
 import logging.handlers
+__author__  = "Trelay Wang <trelwan@celestica.com>"
+__status__  = ""
+# The following module attributes are no longer updated.
+__version__ = "0.1"
+__date__    = "2016.07.13"
 
 #: HTML header (starts the document
 START_OF_DOC_FMT = """<html>
@@ -76,44 +75,91 @@ margin : 0;
 <h1>%(title)s</h1>
 
 <p>Select a category to display:
-<select id="mySelect" onchange="myFunction()">
+<select id="mySelect" onchange="cate_fun()">
   <option value="ALL">ALL
   <option value="DEBUG">DEBUG
   <option value="INFO">INFO
   <option value="WARNING">WARNING
   <option value="ERROR">ERROR
-</select> </p>
+</select> 
+</p>
+
+<form>
+Type Keyword to display:
+<input type="text" id="text1" value="ALL" size="12"/>
+<input type="checkbox" id="check1" />
+<input type="button" id="button1" onclick="keyword_fun()" 
+value="Seach" />
+</form>
 
 <script>
-function myFunction(){
-var all = document.getElementsByTagName("tr");
+function cate_fun(){
+var all_tr = document.getElementsByTagName("tr");
 var slct_v = document.getElementById("mySelect").value;
 
-for (var i=0, max=all.length; i < max; i++) {
-var css_name=all[i].getElementsByTagName("td")[3].getAttribute("class");
+for (var i=0, max=all_tr.length; i < max; i++) {
+var css_name=all_tr[i].getElementsByTagName("td")[3].getAttribute("class");
 	
-	if (css_name=="debug" & slct_v=="DEBUG"){
-	all[i].style.display='';
+	if (css_name=="debug" & slct_v=="DEBUG")
+    {
+	    all_tr[i].style.display='';
 	}
-	else if (css_name=="info" & slct_v=="INFO"){
-	all[i].style.display='';
+	else if (css_name=="info" & slct_v=="INFO")
+    {
+	    all_tr[i].style.display='';
 	}
-	else if (css_name=="warn" & slct_v=="WARNING"){
-	all[i].style.display='';
+	else if (css_name=="warn" & slct_v=="WARNING")
+    {
+	    all_tr[i].style.display='';
 	}
-	else if (css_name=="err" & slct_v=="ERROR"){
-	all[i].style.display='';
+	else if (css_name=="err" & slct_v=="ERROR")
+    {
+	    all_tr[i].style.display='';
 	}
 	else{
 		if (slct_v=="ALL"){
-			all[i].style.display='';
+			all_tr[i].style.display='';
 		}
 		else{
-			all[i].style.display='none';
+			all_tr[i].style.display='none';
 		};
 	};
   };
 }
+
+
+function keyword_fun()
+{
+var all_tr = document.getElementsByTagName("tr");
+var Keyword = document.getElementById("text1").value;
+if (document.getElementById("check1").checked)
+	{
+	    Keyword=Keyword.toLowerCase();
+	}
+for (var i=0, max=all_tr.length; i < max; i++) {
+	if (Keyword=="ALL" || Keyword=="all")
+	{
+		all_tr[i].style.display='';
+	}
+	else
+	{
+		var td_msg=all_tr[i].getElementsByTagName("td")[3].innerHTML;
+		if (document.getElementById("check1").checked)
+			{
+			    td_msg=td_msg.toLowerCase()
+			}
+		if (td_msg.indexOf(Keyword)>1)
+			{
+			    all_tr[i].style.display='';
+			}
+		else
+			{
+			    all_tr[i].style.display='none';
+			};
+    };  
+  };
+}
+
 </script>
 
 <div class="box">
@@ -396,10 +442,10 @@ class CONFormatter(logging.Formatter):
             sys.exit()
             
         record.message = record.getMessage()
-        record.message=record.message.replace(self.HighLight_msg_tag_start,\
-                       console_color)
-        record.message=record.message.replace(self.HighLight_msg_tag_end,\
-                       console_normal)
+        record.message=record.message.replace(self.HighLight_msg_tag_start,'')
+        record.message=record.message.replace(self.HighLight_msg_tag_end,'')
+        if record.levelno>20:
+            record.message= console_color + record.message + console_normal
 
         if self.usesTime():
             record.asctime = self.formatTime(record, self.datefmt)
@@ -423,6 +469,7 @@ class PyLogger(logging.Logger):
     """
     Log records to html using a custom HTML formatter and a specialised
     file stream handler.
+    WARNING: This just creates signgal logger channel, use logging.getLogger
     name: The html logging thread name.
     html_filename: The file name that you want to write to
     mode: Specifies the mode to open the file, if filename is specified
@@ -432,31 +479,7 @@ class PyLogger(logging.Logger):
     HtmlmaxBytes: The size of this html file
     encoding: it is used to determine how to do the output to the stream
 
-    html_format: 
-    %(name)s            Name of the logger (logging channel)
-    %(levelno)s         Numeric logging level for the message (DEBUG, INFO,
-                        WARNING, ERROR, CRITICAL)
-    %(levelname)s       Text logging level for the message ("DEBUG", "INFO",
-                        "WARNING", "ERROR", "CRITICAL")
-    %(pathname)s        Full pathname of the source file where the logging
-                        call was issued (if available)
-    %(filename)s        Filename portion of pathname
-    %(module)s          Module (name portion of filename)
-    %(lineno)d          Source line number where the logging call was issued
-                        (if available)
-    %(funcName)s        Function name
-    %(created)f         Time when the LogRecord was created (time.time()
-                        return value)
-    %(asctime)s         Textual time when the LogRecord was created
-    %(msecs)d           Millisecond portion of the creation time
-    %(relativeCreated)d Time in milliseconds when the LogRecord was created,
-                        relative to the time the logging module was loaded
-                        (typically at application startup time)
-    %(thread)d          Thread ID (if available)
-    %(threadName)s      Thread name (if available)
-    %(process)d         Process ID (if available)
-    %(message)s         The result of record.getMessage(), computed just as
-                        the record is emitted
+    html_format: The same as logging.format
 
     msg_color: Dict with Key is the class that you wish to show and the value
                is the color.
