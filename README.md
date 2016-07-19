@@ -49,7 +49,7 @@ The main logger creator, the sub class of logging.Logger, use to instance a sing
 
 ### The config
 You have two options here: 
- * Use [oslo.config], and read variables from the config file
+ * Use [oslo.config], and read variables from the [config] file
  * Set Variables in your script.
 
 An example(the same as showed in [test.py] in this repo):
@@ -111,4 +111,4 @@ More details coming soon.
 
    [test.py]: <https://github.com/trelay/PyLog2html/blob/master/test.py>
    [oslo.config]: <http://docs.openstack.org/developer/oslo.config/>
-   
+   [config]: <https://github.com/trelay/PyLog2html/blob/master/config.py>
