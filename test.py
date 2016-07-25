@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from htmllog import *
+from PyLog2html import *
 try:
 	raise ValueError('variable enable by purpose')
 	from config import CONF
@@ -23,7 +23,7 @@ except:
 	HighLight_msg_tag_start="<hl>"
 	HighLight_msg_tag_end="</hl>"
 	msg_color=dict(
-	err_color="red",
+	err_color="magenta",
 	warn_color="orange",
 	info_color="white",
 	dbg_color="white")

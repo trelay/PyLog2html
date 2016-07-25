@@ -242,11 +242,19 @@ CONF.register_group(cli_group)
 CONF.register_cli_opts(cli_opts, cli_group)
 CONF(default_config_files=[find_cfg_file()])
 
+print("&"*20)
+cc=CONF.LOG.color_1
+print("%"*20)
+
 #This following condition is to: find the proper color 
 #which defines in CONF.LOG.color
 if CONF.LOG.html_color=='color_1':
 	#Don't use shallow copying here
-	CONF.LOG.color.update(CONF.LOG.color_1)
+	print("*"*20)
+	cc=CONF.LOG.color_1
+	print("~"*20)
+	CONF.LOG.color.update(cc)
+	print("*"*20)
 elif CONF.LOG.html_color=='color_2':
 	CONF.LOG.color.update(CONF.LOG.color_2)
 
