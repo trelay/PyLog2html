@@ -19,6 +19,11 @@ rest_cfg_opts = [
 		default='redfish',
 		help='Client app name that communicates with resetful'),
 
+	cfg.StrOpt(
+		name='host',
+		default='10.204.29.244',
+		help='The IP address of the resetful Server'),
+
 	cfg.IntOpt(
 		name='bind_port',
 		default=8888,
@@ -27,7 +32,12 @@ rest_cfg_opts = [
 	cfg.ListOpt(
 		name='ver_support',
 		default=['1'],
-		help='The ver of Redfish this app supports.')
+		help='The ver of Redfish this app supports.'),
+
+	cfg.StrOpt(
+		name='client_app_ver',
+		default='1',
+		help='The version of Client app.')
 ]
 ###############################################################
 main_group = cfg.OptGroup(
@@ -96,18 +106,18 @@ log_cfg_opts = [
 
 	cfg.DictOpt(
 	name="color_1",
-	default={"err_color": "#FF0000",
-			"warn_color": "#FFFF00",
-			"info_color": "#FFFFFF",
-			"dbg_color": "#FFFFFF"},
+	default={"err_color": "magenta",
+			"warn_color": "yellow",
+			"info_color": "white",
+			"dbg_color": "white"},
 	help='The html color scheme option1'),
 
 	cfg.DictOpt(
 	name="color_2",
-	default={"err_color": "#FF0000",
-			"warn_color": "#FFA500",
-			"info_color": "#FFFFFF",
-			"dbg_color": "#FFFFFF"},
+	default={"err_color": "red",
+			"warn_color": "orange",
+			"info_color": "white",
+			"dbg_color": "blue"},
 	help='The html color scheme option2'),
 	
 	cfg.BoolOpt(
@@ -121,12 +131,12 @@ log_cfg_opts = [
 	help='How is the font size for keyword in html log.'),
 
 	cfg.StrOpt(
-	name='HighLight_msg_tag_start',
+	name='Keyword_tag_start',
 	default='<hl>',
 	help='start tag to mark the keyword to be it'),
 
 	cfg.StrOpt(
-	name='HighLight_msg_tag_end',
+	name='Keyword_tag_end',
 	default='</hl>',
 	help='end tag to mark the keyword to be it'),
 	
@@ -137,7 +147,7 @@ log_cfg_opts = [
 
 	cfg.IntOpt(
 	name='HtmlmaxBytes',
-	default=50*1024*1024,
+	default=5*1024*1024,
 	help='The size of the html file, keep it small\
 		otherwise, it takes long time to open it in brower'),
 
@@ -165,8 +175,13 @@ request_group = cfg.OptGroup(
 )
 req_fail_opts = [
 	cfg.FloatOpt(
-	name='http_time',
+	name='http_time_warn',
 	default= 0.4,
+	help='The limit of request time'),
+
+	cfg.FloatOpt(
+	name='http_time_error',
+	default= 1.0,
 	help='The limit of request time'),
 
 	cfg.FloatOpt(
@@ -242,19 +257,11 @@ CONF.register_group(cli_group)
 CONF.register_cli_opts(cli_opts, cli_group)
 CONF(default_config_files=[find_cfg_file()])
 
-print("&"*20)
-cc=CONF.LOG.color_1
-print("%"*20)
-
 #This following condition is to: find the proper color 
 #which defines in CONF.LOG.color
 if CONF.LOG.html_color=='color_1':
 	#Don't use shallow copying here
-	print("*"*20)
-	cc=CONF.LOG.color_1
-	print("~"*20)
-	CONF.LOG.color.update(cc)
-	print("*"*20)
+	CONF.LOG.color.update(CONF.LOG.color_1)
 elif CONF.LOG.html_color=='color_2':
 	CONF.LOG.color.update(CONF.LOG.color_2)
 

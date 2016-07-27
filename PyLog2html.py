@@ -358,21 +358,21 @@ class HTMLFormatter(logging.Formatter):
                    'ERROR': 'err'}
 
     def __init__(self, fmt=None, Keyword_Italic=True, Keyword_FontSize=5, 
-                HighLight_msg_tag_start='<hl>', HighLight_msg_tag_end='</hl>'):
+                Keyword_tag_start='<hl>', Keyword_tag_end='</hl>'):
         super().__init__(fmt)
         """
         Initialize the formatter with specified format strings.
-        HighLight_msg_tag_start & HighLight_msg_tag_end: used to highlight message.
+        Keyword_tag_start & Keyword_tag_end: used to highlight message.
         Keyword_Italic: Make the part of the message italic if it's decorated by 
-                 HighLight_msg_tag_*
+                 Keyword_tag_*
         Keyword_FontSize: The font size of the message italic if it's decorated by 
-                 HighLight_msg_tag_*
+                 Keyword_tag_*
         """
 
         self.Keyword_Italic=Keyword_Italic
         self.Keyword_FontSize=Keyword_FontSize
-        self.HighLight_msg_tag_start=HighLight_msg_tag_start
-        self.HighLight_msg_tag_end=HighLight_msg_tag_end
+        self.Keyword_tag_start=Keyword_tag_start
+        self.Keyword_tag_end=Keyword_tag_end
 
     def format(self, record):
         try:
@@ -384,14 +384,14 @@ class HTMLFormatter(logging.Formatter):
             record.asctime = self.formatTime(record, self.datefmt)
         record.cssname=class_name
         if self.Keyword_Italic:
-            record.message=record.message.replace(self.HighLight_msg_tag_start, \
+            record.message=record.message.replace(self.Keyword_tag_start, \
                              "<font size={0:d}><i>".format(self.Keyword_FontSize))
-            record.message=record.message.replace(self.HighLight_msg_tag_end,\
+            record.message=record.message.replace(self.Keyword_tag_end,\
                              "</i></font>")
         else:
-            record.message=record.message.replace(self.HighLight_msg_tag_start,\
+            record.message=record.message.replace(self.Keyword_tag_start,\
                              "<font size={0:d}>".format(Keyword_FontSize))
-            record.message=record.message.replace(self.HighLight_msg_tag_end,\
+            record.message=record.message.replace(self.Keyword_tag_end,\
                              "</font>")
         return MSG_FMT % record.__dict__
 
@@ -399,18 +399,18 @@ class CONFormatter(logging.Formatter):
     """
     Formats each record to console with color.
     class CONSOLE_COLOR:(defined in this file), show how to decorate the message
-    that is taged by HighLight_msg_tag_*, add or edit if you like.
+    that is taged by Keyword_tag_*, add or edit if you like.
     
     AttributeError: this error is raised if the color you chose is not in the list
                    of CONSOLE_COLOR.
     """
-    def __init__(self, fmt=None,HighLight_msg_tag_start='<hl>', 
-                 HighLight_msg_tag_end='</hl>', msg_color={'err_color': 'red', 
+    def __init__(self, fmt=None,Keyword_tag_start='<hl>', 
+                 Keyword_tag_end='</hl>', msg_color={'err_color': 'red', 
                  'warn_color': 'yellow','info_color': 'white', 'dbg_color':'white'}):
         super().__init__(fmt)
         self.msg_color=msg_color
-        self.HighLight_msg_tag_start=HighLight_msg_tag_start
-        self.HighLight_msg_tag_end=HighLight_msg_tag_end
+        self.Keyword_tag_start=Keyword_tag_start
+        self.Keyword_tag_end=Keyword_tag_end
 
     def format(self, record):
         try:
@@ -442,8 +442,8 @@ class CONFormatter(logging.Formatter):
             sys.exit()
             
         record.message = record.getMessage()
-        record.message=record.message.replace(self.HighLight_msg_tag_start,'')
-        record.message=record.message.replace(self.HighLight_msg_tag_end,'')
+        record.message=record.message.replace(self.Keyword_tag_start,'')
+        record.message=record.message.replace(self.Keyword_tag_end,'')
         if record.levelno>20:
             record.message= console_color + record.message + console_normal
 
@@ -484,9 +484,9 @@ class PyLogger(logging.Logger):
     msg_color: Dict with Key is the class that you wish to show and the value
                is the color.
     Keyword_Italic: Make the part of the message italic if it's decorated by
-                 HighLight_msg_tag_*
+                 Keyword_tag_*
     Keyword_FontSize: The font size of the message italic if it's decorated by
-                 HighLight_msg_tag_*
+                 Keyword_tag_*
     Html_Rotating: If we need to rotate the html file if the file is over the
                    limit of HtmlmaxBytes.
     Html_backupCount: How much the files we'll back if current file is over the
@@ -495,16 +495,16 @@ class PyLogger(logging.Logger):
 
     """
     def __init__(self, name="html_logger", html_filename="log.html", mode='a',
-                 html_title="HTML Logger",level=logging.DEBUG,
-                 HtmlmaxBytes=1024*1024, encoding=None, delay=False,
+                 html_title="HTML Logger",root_level=logging.DEBUG,fh_level=logging.DEBUG,
+                 ch_level=logging.DEBUG,HtmlmaxBytes=1024*1024, encoding=None, delay=False,
                  html_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                  msg_color={'err_color': 'red', 'warn_color': 'red',
                  'info_color': 'white', 'dbg_color':'white'}, 
-                 Keyword_Italic=True,Keyword_FontSize=5, HighLight_msg_tag_start="<hl>",
-                 HighLight_msg_tag_end="</hl>",Html_Rotating=False,Html_backupCount=5,
+                 Keyword_Italic=True,Keyword_FontSize=5, Keyword_tag_start="<hl>",
+                 Keyword_tag_end="</hl>",Html_Rotating=False,Html_backupCount=5,
                  console_log=False):
 
-        super().__init__(name, level)
+        super().__init__(name, root_level)
 
         START_DOC_DICT={'title':''}
         START_DOC_DICT.update(msg_color)
@@ -512,21 +512,21 @@ class PyLogger(logging.Logger):
         start_of_doc_fmt=START_OF_DOC_FMT % START_DOC_DICT
 
         format_html = HTMLFormatter(html_format,Keyword_Italic, Keyword_FontSize,\
-                      HighLight_msg_tag_start, HighLight_msg_tag_end)
+                      Keyword_tag_start, Keyword_tag_end)
 
         #FIXME: the argument should be move to another place?
         fh =HTMLFileHandler(filename=html_filename,mode=mode,maxBytes=HtmlmaxBytes,\
              rotating=Html_Rotating,backupCount=Html_backupCount,
              START_OF_DOC_FMT=start_of_doc_fmt, END_OF_DOC_FMT=END_OF_DOC_FMT,\
              encoding=encoding, delay=delay, title=html_title)
-        fh.setLevel(level)
+        fh.setLevel(fh_level)
         fh.setFormatter(format_html)
         self.addHandler(fh)
 
         if console_log:
-            format_con = CONFormatter(html_format, HighLight_msg_tag_start,\
-									 HighLight_msg_tag_end, msg_color)
+            format_con = CONFormatter(html_format, Keyword_tag_start,\
+									 Keyword_tag_end, msg_color)
             ch = logging.StreamHandler()
-            ch.setLevel(level)
+            ch.setLevel(ch_level)
             ch.setFormatter(format_con)
             self.addHandler(ch)
