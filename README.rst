@@ -93,7 +93,7 @@ The config
 
 You have two options here: 
 
-* Use `oslo.config <http://docs.openstack.org/developer/oslo.config/>`_ , and read variables from the [config] file
+* Use `oslo.config <http://docs.openstack.org/developer/oslo.config/>`_ , and read variables from the config file
 * Set Variables in your script.
 
 An example:
