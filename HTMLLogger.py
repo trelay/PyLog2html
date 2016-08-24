@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """
 Python logg to html file.
@@ -17,8 +17,8 @@ import logging.handlers
 __author__  = "Trelay Wang <trelwan@celestica.com>"
 __status__  = ""
 # The following module attributes are no longer updated.
-__version__ = "0.1"
-__date__    = "2016.07.13"
+__version__ = "0.2"
+__date__    = "2016.07.29"
 
 #: HTML header (starts the document
 START_OF_DOC_FMT = """<html>
@@ -93,12 +93,14 @@ value="Seach" />
 </form>
 
 <script>
+var td_msg_index = 4
+
 function cate_fun(){
 var all_tr = document.getElementsByTagName("tr");
 var slct_v = document.getElementById("mySelect").value;
 
 for (var i=0, max=all_tr.length; i < max; i++) {
-var css_name=all_tr[i].getElementsByTagName("td")[3].getAttribute("class");
+var css_name=all_tr[i].getElementsByTagName("td")[td_msg_index].getAttribute("class");
 	
 	if (css_name=="debug" & slct_v=="DEBUG")
     {
@@ -143,12 +145,12 @@ for (var i=0, max=all_tr.length; i < max; i++) {
 	}
 	else
 	{
-		var td_msg=all_tr[i].getElementsByTagName("td")[3].innerHTML;
+		var td_msg=all_tr[i].getElementsByTagName("td")[td_msg_index].innerHTML;
 		if (document.getElementById("check1").checked)
 			{
 			    td_msg=td_msg.toLowerCase()
 			}
-		if (td_msg.indexOf(Keyword)>1)
+		if (td_msg.indexOf(Keyword)>=0)
 			{
 			    all_tr[i].style.display='';
 			}
@@ -176,6 +178,7 @@ MSG_FMT = """
 <tr>
 <td width="200">%(asctime)s</td>
 <td width="100">%(name)s</td>
+<td width="100">%(process)d</td>
 <td width="100">%(levelname)s</td>
 <td class="%(cssname)s">%(message)s</td>
 </tr>
@@ -241,7 +244,7 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
         logging.handlers.BaseRotatingHandler.__init__(self, filename,\
                          mode, encoding, delay)
         self.maxBytes = maxBytes-len(self.start_of_doc_fmt)-len(END_OF_DOC_FMT)-3
-        # Write header
+
         with open(self.baseFilename, 'r') as infile:
             data = infile.read()
 
@@ -249,6 +252,8 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
             self.stream.write(MID_OF_DOC_FMT)
         else:
             self.stream.write(self.start_of_doc_fmt)
+        #Must flush the buffer to prevent multi-START_OF_DOC_FMT in multiprocessing
+        self.flush()
 
     def emit(self, record):
         """
@@ -262,8 +267,10 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
 
             if self.shouldRollover(record):
                 self.stream.write(END_OF_DOC_FMT)
+                self.flush()
                 self.doRollover()
                 self.stream.write(self.start_of_doc_fmt)
+                self.flush()
             logging.FileHandler.emit(self, record)
         except Exception:
             self.handleError(record)
@@ -306,6 +313,7 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
     def close(self):
         # finish document
         self.stream.write(END_OF_DOC_FMT)
+        self.flush()
         super().close()
     
 
@@ -359,7 +367,8 @@ class HTMLFormatter(logging.Formatter):
 
     def __init__(self, fmt=None, Keyword_Italic=True, Keyword_FontSize=5, 
                 Keyword_tag_start='<hl>', Keyword_tag_end='</hl>'):
-        super().__init__(fmt)
+        super().__init__(fmt) #Not support Python2
+		
         """
         Initialize the formatter with specified format strings.
         Keyword_tag_start & Keyword_tag_end: used to highlight message.
@@ -380,6 +389,7 @@ class HTMLFormatter(logging.Formatter):
         except KeyError:
             class_name = "info"
         record.message = record.getMessage()
+        record.message =self.__rsymbol(record.message)
         if self.usesTime():
             record.asctime = self.formatTime(record, self.datefmt)
         record.cssname=class_name
@@ -394,6 +404,15 @@ class HTMLFormatter(logging.Formatter):
             record.message=record.message.replace(self.Keyword_tag_end,\
                              "</font>")
         return MSG_FMT % record.__dict__
+
+    def __rsymbol(self,message):
+        if self.Keyword_tag_start in message:
+            return message
+        message = message.replace('&', '&amp;')
+        message = message.replace('<', '&lt;')
+        message = message.replace('>', '&gt;')
+        message = message.replace('"', '&quot;')
+        return message
 
 class CONFormatter(logging.Formatter):
     """
@@ -465,7 +484,7 @@ class CONFormatter(logging.Formatter):
             s = s + self.formatStack(record.stack_info)
         return s
 
-class PyLogger(logging.Logger):
+class HTMLLogger(logging.Logger):
     """
     Log records to html using a custom HTML formatter and a specialised
     file stream handler.
@@ -502,9 +521,9 @@ class PyLogger(logging.Logger):
                  'info_color': 'white', 'dbg_color':'white'}, 
                  Keyword_Italic=True,Keyword_FontSize=5, Keyword_tag_start="<hl>",
                  Keyword_tag_end="</hl>",Html_Rotating=False,Html_backupCount=5,
-                 console_log=False):
+                 console_log=True):
 
-        super().__init__(name, root_level)
+        super().__init__(name, root_level) #Not support Python2
 
         START_DOC_DICT={'title':''}
         START_DOC_DICT.update(msg_color)
