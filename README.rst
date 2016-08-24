@@ -52,9 +52,9 @@ HTMLFileHandler
 
 The sub class of logging.handlers.RotatingFileHandler, you can see this class is to extend the function of Rotating HTML file, comparing to its parent class, it has following advantages:
 
- * The format of log file name will be saved as "log_1.html" & "log_2.html". 
- * Write the beginning and end strings in HTML, like "\<html>\<head>...\</head>\</html>"
- * Have a switch to let user choose if need to rotate files: If it's False, the log file will be added and rollover occurs whenever the current log file is nearly maxBytes in length. If it's True, it behaves like logging.handlers.RotatingFileHandler.
+* The format of log file name will be saved as "log_1.html" & "log_2.html". 
+* Write the beginning and end strings in HTML, like "\<html>\<head>...\</head>\</html>"
+* Have a switch to let user choose if need to rotate files: If it's False, the log file will be added and rollover occurs whenever the current log file is nearly maxBytes in length. If it's True, it behaves like logging.handlers.RotatingFileHandler.
 
 
 HTMLFormatter
@@ -62,9 +62,9 @@ HTMLFormatter
 
 The sub class of logging.Formatter, you can see this class is to add HTML tags, comparing to its parent class, it has following advantages:
 
- * Highlight keyword by setting its size and the Italic
- * Find the correct color to display for particular messages in Html file.
- * The keyword should be decorated by <hl>keyword</hl>(which can be found in config file or variables you defined.)
+* Highlight keyword by setting its size and the Italic
+* Find the correct color to display for particular messages in Html file.
+* The keyword should be decorated by <hl>keyword</hl>(which can be found in config file or variables you defined.)
 
 CONFormatter
 ------------
@@ -73,16 +73,16 @@ The sub class of logging.Formatter, this module is to print log to console with 
 
 Currently, Only following color are supported in Console:
 
-* yellow
-* cyan
-* magenta
-* blue
-* orange
-* green
-* red
-* black
-* white
-* normal
+ * yellow
+ * cyan
+ * magenta
+ * blue
+ * orange
+ * green
+ * red
+ * black
+ * white
+ * normal
 
 HTMLLogger
 ----------
@@ -92,8 +92,9 @@ The config
 ----------
 
 You have two options here: 
- * Use `oslo.config <http://docs.openstack.org/developer/oslo.config/>`_ , and read variables from the [config] file
- * Set Variables in your script.
+
+* Use `oslo.config <http://docs.openstack.org/developer/oslo.config/>`_ , and read variables from the [config] file
+* Set Variables in your script.
 
 An example:
 
