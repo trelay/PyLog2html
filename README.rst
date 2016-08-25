@@ -100,6 +100,8 @@ An example:
 
 .. code-block:: python
 
+    from HTMLLogger import HTMLLogger
+
     app_name="Red_Fish"
     Keyword_Italic=True
     Keyword_FontSize=5

@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 from distutils.core import setup
+from codecs import open  # To use a consistent encoding
+from os import path
+
+here = path.abspath(path.dirname(__file__))
+
+# Get the long description from the relevant file
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+	long_description = f.read()
 
 setup(name='PyLog2html',
-	version='1.0.0',
+	version='1.0.1',
 	description='Python logging to html',
+	long_description=long_description,
 	author='Trelay Wang',
 	author_email='trelwan@celestica.com',
 	url='https://github.com/trelay/PyLog2html',
@@ -29,5 +38,5 @@ setup(name='PyLog2html',
 	keywords='logging html',
 	#packages=['PyLog2html'],
 	py_modules=['HTMLLogger'],
-	download_url='https://github.com/trelay/PyLog2html/tarball/1.0.0',
+	download_url='https://github.com/trelay/PyLog2html/tarball/1.0.1',
 )
