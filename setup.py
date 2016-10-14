@@ -9,7 +9,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 	long_description = f.read()
 
 setup(name='PyLog2html',
-	version='1.0.3',
+	version='1.0.4',
 	description='Python logging to html',
 	long_description=long_description,
 	author='Trelay Wang',
@@ -38,5 +38,5 @@ setup(name='PyLog2html',
 	keywords='logging html',
 	#packages=['PyLog2html'],
 	py_modules=['HTMLLogger'],
-	download_url='https://github.com/trelay/PyLog2html/tarball/1.0.3',
+	download_url='https://github.com/trelay/PyLog2html/tarball/1.0.4',
 )

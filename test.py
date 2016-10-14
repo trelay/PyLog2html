@@ -9,3 +9,4 @@ if __name__=="__main__":
 		logger.warning("This is <hl>warning</hl>")
 		logger.error('This is <hl>error</hl> xxx')
 		logger.info('_____________')
+        logger.table('Add html table:<table><tr><th>...</th></tr></table>')

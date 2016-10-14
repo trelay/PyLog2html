@@ -257,8 +257,6 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
 
         with open(self.baseFilename, 'r+') as infile:
             data = infile.read()
-
-            print "self.baseFilename:",self.baseFilename
             if self.title in data:
                 DOC_END_LEN = len(END_OF_DOC_FMT)
                 #self.stream.write(MID_OF_DOC_FMT)
