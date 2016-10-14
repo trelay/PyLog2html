@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
-
 """
 Python logg to html file.
+Compatable for both python2 and python3
 The benefit of writing log to html: We can highlight the keyword or
 the error, to make the log file more colorful and understandable.
 And it includes writing log to console.
@@ -17,8 +16,12 @@ import logging.handlers
 __author__  = "Trelay Wang <trelwan@celestica.com>"
 __status__  = ""
 # The following module attributes are no longer updated.
-__version__ = "0.2"
-__date__    = "2016.07.29"
+__version__ = "1.0.3"
+__date__    = "2016.10.14"
+
+# Add _levelNames
+logging.TABLE = 25
+logging.addLevelName(logging.TABLE, 'TABLE')
 
 #: HTML header (starts the document
 START_OF_DOC_FMT = """<html>
@@ -93,70 +96,77 @@ value="Seach" />
 </form>
 
 <script>
-var td_msg_index = 4
-
+var level_index = 3
+var msg_index = 4
 function cate_fun(){
-var all_tr = document.getElementsByTagName("tr");
+var tab = document.getElementById("toptable");
 var slct_v = document.getElementById("mySelect").value;
 
-for (var i=0, max=all_tr.length; i < max; i++) {
-var css_name=all_tr[i].getElementsByTagName("td")[td_msg_index].getAttribute("class");
-	
-	if (css_name=="debug" & slct_v=="DEBUG")
+for(var i=0; i<tab.rows.length;i++)
+{
+  	if (tab.rows[i].cells[level_index].innerHTML=="DEBUG" & slct_v=="DEBUG")
     {
-	    all_tr[i].style.display='';
+	    tab.rows[i].style.display='';
 	}
-	else if (css_name=="info" & slct_v=="INFO")
+	else if (tab.rows[i].cells[level_index].innerHTML=="INFO" & slct_v=="INFO")
     {
-	    all_tr[i].style.display='';
+	    //console.log(i)
+		//console.log(tab.rows[i].cells[level_index].innerHTML)
+	    tab.rows[i].style.display='';
 	}
-	else if (css_name=="warn" & slct_v=="WARNING")
+	else if (tab.rows[i].cells[level_index].innerHTML=="TABLE" & slct_v=="INFO")
     {
-	    all_tr[i].style.display='';
+	    tab.rows[i].style.display='';
 	}
-	else if (css_name=="err" & slct_v=="ERROR")
+	else if (tab.rows[i].cells[level_index].innerHTML=="WARNING" & slct_v=="WARNING")
     {
-	    all_tr[i].style.display='';
+	    tab.rows[i].style.display='';
 	}
-	else{
+	else if (tab.rows[i].cells[level_index].innerHTML=="ERROR" & slct_v=="ERROR")
+    {
+	    tab.rows[i].style.display='';
+	}
+	else
+	{
 		if (slct_v=="ALL"){
-			all_tr[i].style.display='';
+			tab.rows[i].style.display='';
 		}
 		else{
-			all_tr[i].style.display='none';
+			tab.rows[i].style.display='none';
 		};
 	};
-  };
 }
-
+}
 
 function keyword_fun()
 {
-var all_tr = document.getElementsByTagName("tr");
+var tab = document.getElementById("toptable");
 var Keyword = document.getElementById("text1").value;
 if (document.getElementById("check1").checked)
 	{
 	    Keyword=Keyword.toLowerCase();
 	}
-for (var i=0, max=all_tr.length; i < max; i++) {
+for (var i=0;i<tab.rows.length;i++) {
 	if (Keyword=="ALL" || Keyword=="all")
 	{
-		all_tr[i].style.display='';
+		tab.rows[i].style.display='';
 	}
 	else
 	{
-		var td_msg=all_tr[i].getElementsByTagName("td")[td_msg_index].innerHTML;
+		var td_msg=tab.rows[i].cells[msg_index].innerHTML
 		if (document.getElementById("check1").checked)
 			{
-			    td_msg=td_msg.toLowerCase()
+			    td_msg=td_msg.toLowerCase();
 			}
 		if (td_msg.indexOf(Keyword)>=0)
 			{
-			    all_tr[i].style.display='';
+			    //console.log(Keyword)
+			    tab.rows[i].style.display='';
 			}
 		else
 			{
-			    all_tr[i].style.display='none';
+				//console.log(i)
+			    tab.rows[i].style.display='none';
 			};
     };  
   };
@@ -165,7 +175,7 @@ for (var i=0, max=all_tr.length; i < max; i++) {
 </script>
 
 <div class="box">
-<table>
+<table id="toptable">
 """
 
 END_OF_DOC_FMT = """</table>
@@ -188,7 +198,7 @@ MID_OF_DOC_FMT = """
 <!--
 This following table were created by addtional thread-->
 <div class="box">
-<table>
+<table id="toptable">
 """
 
 class CONSOLE_COLOR:
@@ -245,13 +255,18 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
                          mode, encoding, delay)
         self.maxBytes = maxBytes-len(self.start_of_doc_fmt)-len(END_OF_DOC_FMT)-3
 
-        with open(self.baseFilename, 'r') as infile:
+        with open(self.baseFilename, 'r+') as infile:
             data = infile.read()
 
-        if self.title in data:
-            self.stream.write(MID_OF_DOC_FMT)
-        else:
-            self.stream.write(self.start_of_doc_fmt)
+            print "self.baseFilename:",self.baseFilename
+            if self.title in data:
+                DOC_END_LEN = len(END_OF_DOC_FMT)
+                #self.stream.write(MID_OF_DOC_FMT)
+                infile.seek(0-DOC_END_LEN,2)
+                infile.write(' '*DOC_END_LEN)
+                infile.seek(0,2)
+            else:
+                self.stream.write(self.start_of_doc_fmt)
         #Must flush the buffer to prevent multi-START_OF_DOC_FMT in multiprocessing
         self.flush()
 
@@ -314,7 +329,8 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
         # finish document
         self.stream.write(END_OF_DOC_FMT)
         self.flush()
-        super().close()
+        #super().close()
+        logging.handlers.RotatingFileHandler.close(self)
     
 
 class HTMLFormatter(logging.Formatter):
@@ -367,7 +383,8 @@ class HTMLFormatter(logging.Formatter):
 
     def __init__(self, fmt=None, Keyword_Italic=True, Keyword_FontSize=5, 
                 Keyword_tag_start='<hl>', Keyword_tag_end='</hl>'):
-        super().__init__(fmt) #Not support Python2
+        #super().__init__(fmt) #Not support Python2
+        logging.Formatter.__init__(self,fmt)
 		
         """
         Initialize the formatter with specified format strings.
@@ -389,7 +406,10 @@ class HTMLFormatter(logging.Formatter):
         except KeyError:
             class_name = "info"
         record.message = record.getMessage()
-        record.message =self.__rsymbol(record.message)
+
+        if record.levelno % 10 ==0:
+            record.message =self.__rsymbol(record.message)
+
         if self.usesTime():
             record.asctime = self.formatTime(record, self.datefmt)
         record.cssname=class_name
@@ -403,6 +423,7 @@ class HTMLFormatter(logging.Formatter):
                              "<font size={0:d}>".format(Keyword_FontSize))
             record.message=record.message.replace(self.Keyword_tag_end,\
                              "</font>")
+        #print record.__dict__
         return MSG_FMT % record.__dict__
 
     def __rsymbol(self,message):
@@ -426,7 +447,8 @@ class CONFormatter(logging.Formatter):
     def __init__(self, fmt=None,Keyword_tag_start='<hl>', 
                  Keyword_tag_end='</hl>', msg_color={'err_color': 'red', 
                  'warn_color': 'yellow','info_color': 'white', 'dbg_color':'white'}):
-        super().__init__(fmt)
+        #super().__init__(fmt)
+        logging.Formatter.__init__(self,fmt)
         self.msg_color=msg_color
         self.Keyword_tag_start=Keyword_tag_start
         self.Keyword_tag_end=Keyword_tag_end
@@ -468,12 +490,14 @@ class CONFormatter(logging.Formatter):
 
         if self.usesTime():
             record.asctime = self.formatTime(record, self.datefmt)
-        s = self.formatMessage(record)
+        #s = self.formatMessage(record)
+        s = self._fmt % record.__dict__
         if record.exc_info:
             # Cache the traceback text to avoid converting it multiple times
             # (it's constant anyway)
             if not record.exc_text:
                 record.exc_text = self.formatException(record.exc_info)
+        '''
         if record.exc_text:
             if s[-1:] != "\n":
                 s = s + "\n"
@@ -482,6 +506,21 @@ class CONFormatter(logging.Formatter):
             if s[-1:] != "\n":
                 s = s + "\n"
             s = s + self.formatStack(record.stack_info)
+        '''
+        if record.exc_text:
+            if s[-1:] != "\n":
+                s = s + "\n"
+            try:
+                s = s + record.exc_text
+            except UnicodeError:
+                # Sometimes filenames have non-ASCII chars, which can lead
+                # to errors when s is Unicode and record.exc_text is str
+                # See issue 8924.
+                # We also use replace for when there are multiple
+                # encodings, e.g. UTF-8 for the filesystem and latin-1
+                # for a script. See issue 13232.
+                s = s + record.exc_text.decode(sys.getfilesystemencoding(),
+                                               'replace')
         return s
 
 class HTMLLogger(logging.Logger):
@@ -523,7 +562,8 @@ class HTMLLogger(logging.Logger):
                  Keyword_tag_end="</hl>",Html_Rotating=False,Html_backupCount=5,
                  console_log=True):
 
-        super().__init__(name, root_level) #Not support Python2
+        #super().__init__(name, root_level) #Not support Python2
+        logging.Logger.__init__(self, name, root_level)
 
         START_DOC_DICT={'title':''}
         START_DOC_DICT.update(msg_color)
@@ -549,3 +589,8 @@ class HTMLLogger(logging.Logger):
             ch.setLevel(ch_level)
             ch.setFormatter(format_con)
             self.addHandler(ch)
+
+    # using logger.table(msg) to add table which contains html symbol
+    def table(self, msg, *args, **kwargs):
+        if self.isEnabledFor(logging.TABLE):
+            self._log(logging.TABLE, msg, args, **kwargs)

@@ -1,11 +1,14 @@
 PyLog2html
 ==========
 
+Support both Python2 and Python3
+
 PyLog2Html can save log to HTML file, there is plenty of reasons to save log into HTML file:
 
 * Highlight errors
 * Colorful output
 * More readable
+* Insert table
 
 Installation
 ------------
@@ -25,6 +28,7 @@ Quick Start
     logger.debug('This is debug')
     logger.warning("This is <hl>warning</hl>")
     logger.error('This is an <hl>error</hl>')
+    logger.table('Add html table:<table><tr><th>...</th></tr></table>')
 
 View the log:
 -------------
@@ -37,7 +41,7 @@ View the log:
 Version
 -------
 
-1.0.0
+1.0.3
 
 Class Inheritance:
 ------------------
@@ -131,6 +135,7 @@ An example:
     logger.info('This is info')
     logger.warning("This is <hl>warning</hl>")
     logger.error('This is <hl>error</hl> xxx')
+    logger.table('Add html table:<table><tr><th>...</th></tr></table>')
 
 
 **Free Software, Hell Yeah!**
