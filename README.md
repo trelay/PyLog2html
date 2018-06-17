@@ -21,14 +21,13 @@ Quick Start
 -----------
 
 ```python
-
 from HTMLLogger import HTMLLogger
-    logger=HTMLLogger(name="Test App", html_filename="log.html", console_log=True)
-    logger.info('This is info')
-    logger.debug('This is debug')
-    logger.warning("This is <hl>warning</hl>")
-    logger.error('This is an <hl>error</hl>')
-    logger.table('Add html table:<table><tr><th>...</th></tr></table>')
+logger=HTMLLogger(name="Test App", html_filename="log.html", console_log=True)
+logger.info('This is info')
+logger.debug('This is debug')
+logger.warning("This is <hl>warning</hl>")
+logger.error('This is an <hl>error</hl>')
+logger.table('Add html table:<table><tr><th>...</th></tr></table>')
 ```
 
 Example of Above code:
@@ -109,38 +108,38 @@ An example:
 
 ```python
 
-    from HTMLLogger import HTMLLogger
+from HTMLLogger import HTMLLogger
 
-    app_name="Red_Fish"
-    Keyword_Italic=True
-    Keyword_FontSize=5
-    HighLight_msg_tag_start="<hl>"
-    HighLight_msg_tag_end="</hl>"
-    msg_color=dict(
-    err_color="magenta",
-    warn_color="orange",
-    info_color="white",
-    dbg_color="white")
-    log_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-    HtmlmaxBytes=1024*1024*5
-    console_log=True
-    html_title="Default Title"
-    html_filename="Redfish_log.html"
+app_name="Red_Fish"
+Keyword_Italic=True
+Keyword_FontSize=5
+HighLight_msg_tag_start="<hl>"
+HighLight_msg_tag_end="</hl>"
+msg_color=dict(
+err_color="magenta",
+warn_color="orange",
+info_color="white",
+dbg_color="white")
+log_format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+HtmlmaxBytes=1024*1024*5
+console_log=True
+html_title="Default Title"
+html_filename="Redfish_log.html"
 
-    logger=PyLogger(name=app_name, html_filename=html_filename, mode='a',
-    html_title=html_title,level=logging.DEBUG,
-    HtmlmaxBytes=HtmlmaxBytes, encoding=None, delay=False,
-    html_format=log_format, msg_color=msg_color,
-    Keyword_Italic=Keyword_Italic,Keyword_FontSize=Keyword_FontSize,
-    HighLight_msg_tag_start=HighLight_msg_tag_start,
-    HighLight_msg_tag_end=HighLight_msg_tag_end,console_log=console_log,
-    Html_Rotating=False,Html_backupCount=5)
+logger=PyLogger(name=app_name, html_filename=html_filename, mode='a',
+html_title=html_title,level=logging.DEBUG,
+HtmlmaxBytes=HtmlmaxBytes, encoding=None, delay=False,
+html_format=log_format, msg_color=msg_color,
+Keyword_Italic=Keyword_Italic,Keyword_FontSize=Keyword_FontSize,
+HighLight_msg_tag_start=HighLight_msg_tag_start,
+HighLight_msg_tag_end=HighLight_msg_tag_end,console_log=console_log,
+Html_Rotating=False,Html_backupCount=5)
 
-    logger.debug('This is debug')
-    logger.info('This is info')
-    logger.warning("This is <hl>warning</hl>")
-    logger.error('This is <hl>error</hl> xxx')
-    logger.table('Add html table:<table><tr><th>...</th></tr></table>')
+logger.debug('This is debug')
+logger.info('This is info')
+logger.warning("This is <hl>warning</hl>")
+logger.error('This is <hl>error</hl> xxx')
+logger.table('Add html table:<table><tr><th>...</th></tr></table>')
 ```
 
 **Free Software, Hell Yeah!**
