@@ -20,7 +20,7 @@ Install with pip::
 Quick Start
 -----------
 
-.. code-block:: python
+```python
 
     from HTMLLogger import HTMLLogger
     logger=HTMLLogger(name="Test App", html_filename="log.html", console_log=True)
@@ -29,7 +29,7 @@ Quick Start
     logger.warning("This is <hl>warning</hl>")
     logger.error('This is an <hl>error</hl>')
     logger.table('Add html table:<table><tr><th>...</th></tr></table>')
-
+```
 
 Example of Above code:
 -------------
@@ -107,7 +107,7 @@ You have two options here:
 
 An example:
 
-.. code-block:: python
+```python
 
     from HTMLLogger import HTMLLogger
 
@@ -141,7 +141,7 @@ An example:
     logger.warning("This is <hl>warning</hl>")
     logger.error('This is <hl>error</hl> xxx')
     logger.table('Add html table:<table><tr><th>...</th></tr></table>')
-
+```
 
 **Free Software, Hell Yeah!**
 
