@@ -22,7 +22,7 @@ Quick Start
 
 ```python
 
-    from HTMLLogger import HTMLLogger
+from HTMLLogger import HTMLLogger
     logger=HTMLLogger(name="Test App", html_filename="log.html", console_log=True)
     logger.info('This is info')
     logger.debug('This is debug')
