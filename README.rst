@@ -30,7 +30,7 @@ Quick Start
     logger.error('This is an <hl>error</hl>')
     logger.table('Add html table:<table><tr><th>...</th></tr></table>')
 
-![Optional Text](../master/py2html.log.jpeg)
+![Optional Text](../py2html.log.jpeg)
 
 View the log:
 -------------
