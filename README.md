@@ -33,7 +33,7 @@ Quick Start
 
 Example of Above code:
 -------------
-![Optional Text](../master/img/py2html.jpg)
+![Optional Text](../master/img/log.jpg)
 
 View the log:
 -------------
