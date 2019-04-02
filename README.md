@@ -16,6 +16,8 @@ Installation
 Install with pip::
 
     pip install PyLog2html
+    or
+    pip3 install PyLog2html
 
 Quick Start
 -----------
@@ -45,7 +47,7 @@ View the log:
 Version
 -------
 
-1.0.4
+1.0.5
 
 Class Inheritance:
 ------------------

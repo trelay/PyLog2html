@@ -255,13 +255,13 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
                          mode, encoding, delay)
         self.maxBytes = maxBytes-len(self.start_of_doc_fmt)-len(END_OF_DOC_FMT)-3
 
-        with open(self.baseFilename, 'r+') as infile:
+        with open(self.baseFilename, 'rb+') as infile:
             data = infile.read()
-            if self.title in data:
+            if self.title in data.decode():
                 DOC_END_LEN = len(END_OF_DOC_FMT)
                 #self.stream.write(MID_OF_DOC_FMT)
                 infile.seek(0-DOC_END_LEN,2)
-                infile.write(' '*DOC_END_LEN)
+                infile.write(' '.encode()*DOC_END_LEN)
                 infile.seek(0,2)
             else:
                 self.stream.write(self.start_of_doc_fmt)
