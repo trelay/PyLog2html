@@ -16,8 +16,8 @@ import logging.handlers
 __author__  = "Trelay Wang <trelwan@celestica.com>"
 __status__  = ""
 # The following module attributes are no longer updated.
-__version__ = "1.0.3"
-__date__    = "2016.10.14"
+__version__ = "1.0.5"
+__date__    = "2018.04.02"
 
 # Add _levelNames
 logging.TABLE = 25
