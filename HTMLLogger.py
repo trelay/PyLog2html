@@ -8,6 +8,7 @@ Usage:
  -instance a object of PyLogger
  -log as what you did when using python built-in logging.
 """
+import copy
 import os
 import sys
 import traceback
@@ -22,6 +23,30 @@ __date__    = "2018.04.02"
 # Add _levelNames
 logging.TABLE = 25
 logging.addLevelName(logging.TABLE, 'TABLE')
+BUILTIN_ATTRS = {
+    'args',
+    'asctime',
+    'created',
+    'exc_info',
+    'exc_text',
+    'filename',
+    'funcName',
+    'levelname',
+    'levelno',
+    'lineno',
+    'module',
+    'msecs',
+    'message',
+    'msg',
+    'name',
+    'pathname',
+    'process',
+    'processName',
+    'relativeCreated',
+    'stack_info',
+    'thread',
+    'threadName',
+}
 
 #: HTML header (starts the document
 START_OF_DOC_FMT = """<html>
@@ -175,7 +200,7 @@ for (var i=0;i<tab.rows.length;i++) {
 </script>
 
 <div class="box">
-<table id="toptable">
+<table id="toptable" style="table-layout: fixed; width: 100%%">
 """
 
 END_OF_DOC_FMT = """</table>
@@ -191,6 +216,7 @@ MSG_FMT = """
 <td width="100">%(process)d</td>
 <td width="100">%(levelname)s</td>
 <td class="%(cssname)s">%(message)s</td>
+<td class="%(cssname)s">%(extra)s</td>
 </tr>
 """
 
@@ -198,7 +224,7 @@ MID_OF_DOC_FMT = """
 <!--
 This following table were created by addtional thread-->
 <div class="box">
-<table id="toptable">
+<table id="toptable" style="table-layout: fixed; width: 100%%">
 """
 
 class CONSOLE_COLOR:
@@ -329,7 +355,7 @@ class HTMLFileHandler(logging.handlers.RotatingFileHandler):
         self.flush()
         #super().close()
         logging.handlers.RotatingFileHandler.close(self)
-    
+
 
 class HTMLFormatter(logging.Formatter):
     """
@@ -399,30 +425,46 @@ class HTMLFormatter(logging.Formatter):
         self.Keyword_tag_end=Keyword_tag_end
 
     def format(self, record):
+        formatted_record = copy.copy(record)
         try:
-            class_name = self.CSS_CLASSES[record.levelname]
+            class_name = self.CSS_CLASSES[formatted_record.levelname]
         except KeyError:
             class_name = "info"
-        record.message = record.getMessage()
-
-        if record.levelno % 10 ==0:
-            record.message =self.__rsymbol(record.message)
+        formatted_record.message = formatted_record.getMessage()
+        extra = self.extra_from_record(formatted_record)
+        formatted_record.extra = ", ".join("{}={}".format(key, value) for key, value in extra.items())
+        if formatted_record.levelno % 10 == 0:
+            formatted_record.message =self.__rsymbol(formatted_record.message)
 
         if self.usesTime():
-            record.asctime = self.formatTime(record, self.datefmt)
-        record.cssname=class_name
+            formatted_record.asctime = self.formatTime(formatted_record, self.datefmt)
+        formatted_record.cssname=class_name
         if self.Keyword_Italic:
-            record.message=record.message.replace(self.Keyword_tag_start, \
+            formatted_record.message=formatted_record.message.replace(self.Keyword_tag_start, \
                              "<font size={0:d}><i>".format(self.Keyword_FontSize))
-            record.message=record.message.replace(self.Keyword_tag_end,\
+            formatted_record.message=formatted_record.message.replace(self.Keyword_tag_end,\
                              "</i></font>")
         else:
-            record.message=record.message.replace(self.Keyword_tag_start,\
-                             "<font size={0:d}>".format(Keyword_FontSize))
-            record.message=record.message.replace(self.Keyword_tag_end,\
+            formatted_record.message=formatted_record.message.replace(self.Keyword_tag_start,\
+                             "<font size={0:d}>".format(self.Keyword_FontSize))
+            formatted_record.message=formatted_record.message.replace(self.Keyword_tag_end,\
                              "</font>")
         #print record.__dict__
-        return MSG_FMT % record.__dict__
+        return MSG_FMT % formatted_record.__dict__
+
+    @staticmethod
+    def extra_from_record(record):
+        """Returns `extra` dict you passed to logger.
+
+        The `extra` keyword argument is used to populate the `__dict__` of
+        the `LogRecord`.
+
+        """
+        return {
+            attr_name: record.__dict__[attr_name]
+            for attr_name in record.__dict__
+            if attr_name not in BUILTIN_ATTRS
+        }
 
     def __rsymbol(self,message):
         if self.Keyword_tag_start in message:
